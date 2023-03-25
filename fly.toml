@@ -11,10 +11,12 @@ kill_timeout = 5
   internal_port = 5000
   protocol = "udp"
 
-  [services.concurrency]
-    hard_limit = 25
-    soft_limit = 20
+  [[services.ports]]
+    port = "5000"
 
-  [[services.udp_checks]]
-    interval = 10000
-    timeout = 2000
+[[services]]
+  internal_port = 5000
+  protocol = "tcp"
+
+  [[services.ports]]
+    port = "5000"

@@ -1,6 +1,6 @@
 # fly.toml file
 
-app = "server-passthrough"
+app = "Server"
 
 kill_signal = "SIGINT"
 kill_timeout = 5

@@ -3,7 +3,6 @@ from twisted.internet.protocol import DatagramProtocol
 from twisted.internet import reactor
 from time import sleep
 
-import socket
 import sys
 
 
@@ -76,7 +75,6 @@ class ServerProtocol(DatagramProtocol):
 		"""Handle incoming datagram messages."""
 		print(datagram)
 		data_string = datagram.decode("utf-8")
-		print("Data: " + data_string)
 		msg_type = data_string[:2]
 
 		if msg_type == "rs":
@@ -87,9 +85,7 @@ class ServerProtocol(DatagramProtocol):
 			session = split[1]
 			max_clients = split[2]
 			self.create_session(session, max_clients)
-			print("Active sessions")
-			print(self.active_sessions)
-			self.transport.write(bytes('ok:test'+str(c_port),"utf-8"), address)
+			
 
 		elif msg_type == "rc":
 			# register client
@@ -170,18 +166,12 @@ class Client:
 
 if __name__ == '__main__':
 	print('Running server script')
-	if len(sys.argv) < 3:
+	if len(sys.argv) < 2:
 		print("Usage: ./server.py PORT")
 		sys.exit(1)
-	port = int(sys.argv[1])
-	addr = str(sys.argv[2])
-	print(addr + " : " + str(port))
 
-	pSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-	pSocket.bind((addr, port))
 	print("Starting server")
-	reactPort = reactor.adoptDatagramPort(pSocket.fileno(),socket.AF_INET, ServerProtocol())
-	pSocket.close()
-	#reactor.listenMulticast(port, ServerProtocol())
+	port = int(sys.argv[1])
+	reactor.listenUDP(port, ServerProtocol())
 	print('Listening on *:%d' % (port))
 	reactor.run()

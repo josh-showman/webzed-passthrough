@@ -26,13 +26,15 @@ class ServerProtocol(DatagramProtocol):
 		return name in self.registered_clients
 
 
-	def create_session(self, s_id, client_list):
+	def create_session(self, s_id, client_list, address, port):
 		print('Create session')
 		if s_id in self.active_sessions:
 			print("Tried to create existing session")
+			self.transport.write(bytes('error:hostExists',"utf-8"), address)
 			return
 
-		self.active_sessions[s_id] = Session(s_id, client_list, self)
+		self.active_sessions[s_id] = Session(s_id, client_list, self, address)
+		self.transport.write(bytes('ok:'+str(port),"utf-8"), address)
 
 
 	def remove_session(self, s_id):
@@ -71,6 +73,19 @@ class ServerProtocol(DatagramProtocol):
 			print("Tried to checkout unregistered client")
 
 
+	def retrieveList(self, address):
+		print("Retrieve list")
+		print("Active sessions")
+		print(self.active_sessions)
+		ps = "["
+		for i in self.active_sessions:
+			print("active session(loop): " + str(i))
+			ps += str(i) + ","
+		ps = ps[:-1]
+		ps += "]"
+		self.transport.write(bytes('sessions:'+ps,"utf-8"), address)
+
+
 	def datagramReceived(self, datagram, address):
 		print('Datagram recieved')
 		"""Handle incoming datagram messages."""
@@ -82,14 +97,18 @@ class ServerProtocol(DatagramProtocol):
 		if msg_type == "rs":
 			# register session
 			c_ip, c_port = address
-			self.transport.write(bytes('ok:'+str(c_port),"utf-8"), address)
+			#self.transport.write(bytes('ok:address'+str(address),"utf-8"), address)
+			#self.transport.write(bytes('ok:ip'+str(c_ip),"utf-8"), address)
+			#self.transport.write(bytes('ok:port'+str(c_port),"utf-8"), address)
 			split = data_string.split(":")
 			session = split[1]
 			max_clients = split[2]
-			self.create_session(session, max_clients)
+			#self.transport.write(bytes('ok:session'+str(session),"utf-8"), address)
+			#self.transport.write(bytes('ok:max_clients'+str(max_clients),"utf-8"), address)
+			self.create_session(session, max_clients, address, c_port)
 			print("Active sessions")
 			print(self.active_sessions)
-			self.transport.write(bytes('ok:test'+str(c_port),"utf-8"), address)
+			#self.transport.write(bytes('ok:sessions:'+ps,"utf-8"), address)
 
 		elif msg_type == "rc":
 			# register client
@@ -112,16 +131,28 @@ class ServerProtocol(DatagramProtocol):
 			c_name = split[1]
 			self.client_checkout(c_name)
 
+		elif msg_type == "rl":
+			print("rl")
+			split = data_string.split(":")
+			amount = split[1]
+			self.retrieveList(address)
 
 
 class Session:
 
-	def __init__(self, session_id, max_clients, server):
+	def __init__(self, session_id, max_clients, server, address):
 		print('init Session')
 		self.id = session_id
 		self.client_max = max_clients
 		self.server = server
 		self.registered_clients = []
+		self.address = address
+
+
+	def toString(self):
+		rs = ""
+		rs += str(self.id) + "|" + str(self.server) + "|" + str(self.address)
+		return rs
 
 
 	def client_registered(self, client):
@@ -170,11 +201,11 @@ class Client:
 
 if __name__ == '__main__':
 	print('Running server script')
-	if len(sys.argv) < 3:
+	if len(sys.argv) < 2:
 		print("Usage: ./server.py PORT")
 		sys.exit(1)
 	port = int(sys.argv[1])
-	addr = str(sys.argv[2])
+	addr = "127.0.0.0"#socket.gethostname()	#str(sys.argv[2])
 	print(addr + " : " + str(port))
 
 	pSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

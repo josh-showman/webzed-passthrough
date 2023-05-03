@@ -94,8 +94,8 @@ class ServerProtocol(DatagramProtocol):
 		print("Data: " + data_string)
 		msg_type = data_string[:2]
 
-		if msg_type == "rs":
-			# register session
+		if msg_type == "ch":
+			# create host
 			c_ip, c_port = address
 			#self.transport.write(bytes('ok:address'+str(address),"utf-8"), address)
 			#self.transport.write(bytes('ok:ip'+str(c_ip),"utf-8"), address)
@@ -205,7 +205,7 @@ if __name__ == '__main__':
 		print("Usage: ./server.py PORT")
 		sys.exit(1)
 	port = int(sys.argv[1])
-	addr = "127.0.0.0"#socket.gethostname()	#str(sys.argv[2])
+	addr = ""#socket.gethostname()	#str(sys.argv[2])
 	print(addr + " : " + str(port))
 
 	pSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

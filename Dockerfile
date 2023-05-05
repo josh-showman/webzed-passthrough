@@ -22,4 +22,4 @@ COPY . .
 EXPOSE 5000
 
 # replace APP_NAME with module name
-CMD ["python", "Server.py", "5000"]
+# CMD ["python", "Server.py", "5000"]

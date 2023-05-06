@@ -19,9 +19,6 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-
-EXPOSE 5000
-
 # replace APP_NAME with module name
-CMD ["python", "Server.py", "5000"]
+CMD ["python", "Server.py 5000"]
 #run python3 Server.py 5000
